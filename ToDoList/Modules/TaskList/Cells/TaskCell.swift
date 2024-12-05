@@ -1,10 +1,5 @@
 import UIKit
 
-protocol TaskCellDelegate: AnyObject {
-    func taskCell(_ cell: TaskCell, didRequestDeletionOf task: TodoTask)
-    func taskCell(_ cell: TaskCell, didToggleCompletionOf task: TodoTask)
-}
-
 final class TaskCell: UITableViewCell {
     static let reuseIdentifier = "TaskCell"
     

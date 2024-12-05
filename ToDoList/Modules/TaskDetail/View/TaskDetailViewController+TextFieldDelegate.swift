@@ -1,13 +1,12 @@
 import UIKit
 
 extension TaskDetailViewController: UITextFieldDelegate {
-    func textFieldDidChangeSelection(_ textField: UITextField) {
-        updateSaveButtonVisibility()
+    func textFieldDidEndEditing(_ textField: UITextField) {
+        navigationItem.rightBarButtonItem?.isEnabled = !(textField.text?.isEmpty ?? true)
     }
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        textField.resignFirstResponder()
-        detailView.descriptionTextView.becomeFirstResponder()
+        descriptionTextView.becomeFirstResponder()
         return true
     }
 } 

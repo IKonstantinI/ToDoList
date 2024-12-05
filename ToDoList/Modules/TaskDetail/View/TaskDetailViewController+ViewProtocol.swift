@@ -1,12 +1,26 @@
 import UIKit
 
 extension TaskDetailViewController: TaskDetailViewProtocol {
-    override func showError(_ error: Error) {
-        super.showError(error)
-        // дополнительная логика если нужна
+    func display(_ viewModel: TaskDetailViewModel) {
+        titleTextField.text = viewModel.title
+        descriptionTextView.text = viewModel.description
+        dateLabel.text = viewModel.date
+        toggleButton.isSelected = viewModel.isCompleted
+        
+        if viewModel.isCompleted {
+            toggleButton.setImage(UIImage(systemName: "checkmark.circle.fill"), for: .normal)
+        } else {
+            toggleButton.setImage(UIImage(systemName: "circle"), for: .normal)
+        }
     }
     
-    func dismiss() {
-        navigationController?.popViewController(animated: true)
+    override func showError(_ error: Error) {
+        let alert = UIAlertController(
+            title: "Ошибка",
+            message: error.localizedDescription,
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
     }
 } 

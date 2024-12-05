@@ -1,25 +1,25 @@
 import Foundation
 
 enum TaskError: LocalizedError {
-    case invalidURL
-    case invalidResponse
-    case serverError(Int)
-    case decodingError(Error)
     case taskNotFound
+    case saveFailed
+    case deleteFailed
+    case updateFailed
+    case fetchFailed
     case emptyTitle
     
     var errorDescription: String? {
         switch self {
-        case .invalidURL:
-            return "Неверный URL"
-        case .invalidResponse:
-            return "Неверный ответ от сервера"
-        case .serverError(let code):
-            return "Ошибка сервера: \(code)"
-        case .decodingError:
-            return "Ошибка при обработке данных"
         case .taskNotFound:
             return "Задача не найдена"
+        case .saveFailed:
+            return "Не удалось сохранить задачу"
+        case .deleteFailed:
+            return "Не удалось удалить задачу"
+        case .updateFailed:
+            return "Не удалось обновить задачу"
+        case .fetchFailed:
+            return "Не удалось загрузить задачи"
         case .emptyTitle:
             return "Заголовок не может быть пустым"
         }

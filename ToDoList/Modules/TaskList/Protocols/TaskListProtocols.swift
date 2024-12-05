@@ -5,10 +5,10 @@ import UIKit
 protocol TaskListViewProtocol: AnyObject {
     var presenter: TaskListPresenterProtocol? { get set }
     
-    func updateTasks()
+    func showTasks(_ tasks: [TodoTask])
     func showError(_ error: Error)
-    func showLoadingIndicator()
-    func hideLoadingIndicator()
+    func showLoading()
+    func hideLoading()
 }
 
 // MARK: - Presenter
@@ -18,9 +18,12 @@ protocol TaskListPresenterProtocol: AnyObject {
     var interactor: TaskListInteractorProtocol? { get set }
     
     func viewDidLoad()
+    func refreshTasks()
+    func searchTasks(query: String)
+    func addNewTask()
     func didSelectTask(_ task: TodoTask)
-    func didRequestTaskDeletion(_ task: TodoTask)
-    func didRequestTaskStatusChange(_ task: TodoTask)
+    func updateTask(_ task: TodoTask)
+    func deleteTask(_ task: TodoTask)
 }
 
 // MARK: - Interactor
@@ -28,8 +31,9 @@ protocol TaskListInteractorProtocol: AnyObject {
     var presenter: TaskListInteractorOutputProtocol? { get set }
     
     func fetchTasks() async throws
-    func deleteTask(_ task: TodoTask) async throws
+    func searchTasks(query: String) async throws
     func updateTask(_ task: TodoTask) async throws
+    func deleteTask(_ task: TodoTask) async throws
 }
 
 // MARK: - InteractorOutput
@@ -43,6 +47,5 @@ protocol TaskListInteractorOutputProtocol: AnyObject {
 // MARK: - Router
 protocol TaskListRouterProtocol: AnyObject {
     var viewController: UIViewController? { get set }
-    func navigateToTaskDetail(_ task: TodoTask)
-    func navigateToNewTask()
+    func showTaskDetail(_ task: TodoTask?)
 } 

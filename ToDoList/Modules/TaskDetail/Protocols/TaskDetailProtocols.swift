@@ -3,6 +3,7 @@ import UIKit
 
 // MARK: - View
 protocol TaskDetailViewProtocol: AnyObject {
+    func display(_ viewModel: TaskDetailViewModel)
     func showError(_ error: Error)
 }
 
@@ -15,6 +16,7 @@ protocol TaskDetailPresenterProtocol: AnyObject {
     func viewDidLoad()
     func saveTask(title: String, description: String)
     func toggleTaskStatus()
+    func setTask(_ task: TodoTask)
 }
 
 // MARK: - Interactor
@@ -26,6 +28,7 @@ protocol TaskDetailInteractorProtocol: AnyObject {
 // MARK: - Interactor Output
 protocol TaskDetailInteractorOutputProtocol: AnyObject {
     func taskUpdated(_ task: TodoTask)
+    func errorOccurred(_ error: Error)
 }
 
 // MARK: - Router

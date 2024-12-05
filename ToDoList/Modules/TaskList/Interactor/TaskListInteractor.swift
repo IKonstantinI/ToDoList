@@ -24,4 +24,9 @@ final class TaskListInteractor: TaskListInteractorProtocol {
         try storageService.updateTask(task)
         presenter?.taskUpdated(task)
     }
+    
+    func searchTasks(query: String) async throws {
+        let tasks = try await storageService.searchTasks(query: query)
+        presenter?.tasksFetched(tasks)
+    }
 } 

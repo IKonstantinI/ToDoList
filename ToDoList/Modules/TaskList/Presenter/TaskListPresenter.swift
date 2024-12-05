@@ -8,9 +8,11 @@ final class TaskListPresenter: TaskListPresenterProtocol {
     private var tasks: [TodoTask] = []
     
     func viewDidLoad() {
-        DispatchQueue.main.async { [weak self] in
-            self?.view?.showLoadingIndicator()
-        }
+        refreshTasks()
+    }
+    
+    func refreshTasks() {
+        view?.showLoading()
         Task {
             do {
                 try await interactor?.fetchTasks()
@@ -20,27 +22,39 @@ final class TaskListPresenter: TaskListPresenterProtocol {
         }
     }
     
-    func didSelectTask(_ task: TodoTask) {
-        router?.navigateToTaskDetail(task)
-    }
-    
-    func didRequestTaskDeletion(_ task: TodoTask) {
+    func searchTasks(query: String) {
+        view?.showLoading()
         Task {
             do {
-                try await interactor?.deleteTask(task)
+                try await interactor?.searchTasks(query: query)
             } catch {
                 handleError(error)
             }
         }
     }
     
-    func didRequestTaskStatusChange(_ task: TodoTask) {
-        var updatedTask = task
-        updatedTask.completed.toggle()
-        
+    func addNewTask() {
+        router?.showTaskDetail(nil)
+    }
+    
+    func didSelectTask(_ task: TodoTask) {
+        router?.showTaskDetail(task)
+    }
+    
+    func updateTask(_ task: TodoTask) {
         Task {
             do {
-                try await interactor?.updateTask(updatedTask)
+                try await interactor?.updateTask(task)
+            } catch {
+                handleError(error)
+            }
+        }
+    }
+    
+    func deleteTask(_ task: TodoTask) {
+        Task {
+            do {
+                try await interactor?.deleteTask(task)
             } catch {
                 handleError(error)
             }
@@ -53,35 +67,21 @@ extension TaskListPresenter: TaskListInteractorOutputProtocol {
     func tasksFetched(_ tasks: [TodoTask]) {
         DispatchQueue.main.async { [weak self] in
             self?.tasks = tasks
-            self?.view?.hideLoadingIndicator()
-            self?.view?.updateTasks()
+            self?.view?.hideLoading()
+            self?.view?.showTasks(tasks)
         }
     }
     
     func taskDeleted(_ task: TodoTask) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            if let index = self.tasks.firstIndex(where: { $0.id == task.id }) {
-                self.tasks.remove(at: index)
-                self.view?.updateTasks()
-            }
-        }
+        refreshTasks()
     }
     
     func taskUpdated(_ task: TodoTask) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            if let index = self.tasks.firstIndex(where: { $0.id == task.id }) {
-                self.tasks[index] = task
-                self.view?.updateTasks()
-            }
-        }
+        refreshTasks()
     }
     
     func handleError(_ error: Error) {
-        DispatchQueue.main.async { [weak self] in
-            self?.view?.hideLoadingIndicator()
-            self?.view?.showError(error)
-        }
+        view?.hideLoading()
+        view?.showError(error)
     }
 } 

@@ -5,35 +5,49 @@ final class TaskDetailPresenter: TaskDetailPresenterProtocol {
     weak var view: TaskDetailViewProtocol?
     var router: TaskDetailRouterProtocol?
     var interactor: TaskDetailInteractorProtocol?
-    private var task: TodoTask
-    private let dateFormatterService: DateFormatterServiceProtocol
+    private let dateFormatter: DateFormatterServiceProtocol
     
-    // MARK: - Initialization
-    init(task: TodoTask, dateFormatterService: DateFormatterServiceProtocol) {
-        self.task = task
-        self.dateFormatterService = dateFormatterService
+    private var task: TodoTask?
+    
+    init(dateFormatter: DateFormatterServiceProtocol) {
+        self.dateFormatter = dateFormatter
     }
     
     // MARK: - TaskDetailPresenterProtocol
     func viewDidLoad() {
-        if let detailView = view as? TaskDetailViewController {
-            detailView.detailView.configure(with: task)
+        if let task = task {
+            let viewModel = TaskDetailViewModel(
+                title: task.title,
+                description: task.description,
+                date: dateFormatter.format(date: task.createdAt),
+                isCompleted: task.completed
+            )
+            view?.display(viewModel)
         }
     }
     
     func saveTask(title: String, description: String) {
-        guard !title.trimmed.isEmpty else {
+        guard !title.isEmpty else {
             view?.showError(TaskError.emptyTitle)
             return
         }
         
-        var updatedTask = task
-        updatedTask.title = title.trimmed
-        updatedTask.description = description.trimmed
-        
         Task {
             do {
-                try await interactor?.updateTask(updatedTask)
+                if var existingTask = task {
+                    existingTask.title = title
+                    existingTask.description = description
+                    try await interactor?.updateTask(existingTask)
+                } else {
+                    let newTask = TodoTask(
+                        id: Int.random(in: 1...Int.max),
+                        title: title,
+                        description: description,
+                        completed: false,
+                        createdAt: Date()
+                    )
+                    try await interactor?.updateTask(newTask)
+                }
                 await MainActor.run {
                     router?.dismiss()
                 }
@@ -46,24 +60,36 @@ final class TaskDetailPresenter: TaskDetailPresenterProtocol {
     }
     
     func toggleTaskStatus() {
+        guard var task = task else { return }
         task.completed.toggle()
+        
         Task {
             do {
                 try await interactor?.updateTask(task)
             } catch {
-                view?.showError(error)
+                await MainActor.run {
+                    view?.showError(error)
+                }
             }
         }
+    }
+    
+    func setTask(_ task: TodoTask) {
+        self.task = task
     }
 }
 
 // MARK: - TaskDetailInteractorOutputProtocol
 extension TaskDetailPresenter: TaskDetailInteractorOutputProtocol {
     func taskUpdated(_ task: TodoTask) {
-        router?.dismiss()
+        Task { @MainActor in
+            router?.dismiss()
+        }
     }
     
     func errorOccurred(_ error: Error) {
-        view?.showError(error)
+        Task { @MainActor in
+            view?.showError(error)
+        }
     }
 } 

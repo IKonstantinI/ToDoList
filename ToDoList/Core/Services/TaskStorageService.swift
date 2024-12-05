@@ -2,9 +2,9 @@ import Foundation
 import CoreData
 
 final class TaskStorageService: TaskStorageServiceProtocol {
-    private let coreDataManager: CoreDataManager
+    private let coreDataManager: CoreDataManagerProtocol
     
-    init(coreDataManager: CoreDataManager) {
+    init(coreDataManager: CoreDataManagerProtocol) {
         self.coreDataManager = coreDataManager
     }
     
@@ -76,5 +76,16 @@ final class TaskStorageService: TaskStorageServiceProtocol {
         }
         
         return mapEntityToTask(entity)
+    }
+    
+    func searchTasks(query: String) async throws -> [TodoTask] {
+        let tasks = try fetch()
+        if query.isEmpty {
+            return tasks
+        }
+        return tasks.filter { task in
+            task.title.localizedCaseInsensitiveContains(query) ||
+            task.description.localizedCaseInsensitiveContains(query)
+        }
     }
 } 
